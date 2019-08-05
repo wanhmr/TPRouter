@@ -1,0 +1,16 @@
+PODS:
+  - TPRouter (0.1.0)
+
+DEPENDENCIES:
+  - TPRouter (from `../`)
+
+EXTERNAL SOURCES:
+  TPRouter:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  TPRouter: b90845ab334db29a0b0f160d365dccf44c0de063
+
+PODFILE CHECKSUM: fc36fd414672d67f08bdc01fda7327b407b5d961
+
+COCOAPODS: 1.5.3
