@@ -171,6 +171,10 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
     [[self routeMangerForURL:url] registerURL:url clazz:routableClass];
 }
 
+- (void)unregisterURL:(NSURL *)url {
+    [[self routeMangerForURL:url] unregisterURL:url];
+}
+
 - (BOOL)hasRegisteredURL:(NSURL *)url {
     return [[self routeMangerForURL:url] hasRegisteredURL:url];
 }

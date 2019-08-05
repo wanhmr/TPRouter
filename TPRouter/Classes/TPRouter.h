@@ -73,6 +73,8 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 - (void)registerURL:(NSURL *)url routableClass:(Class)routableClass;
 
+- (void)unregisterURL:(NSURL *)url;
+
 - (BOOL)hasRegisteredURL:(NSURL *)url;
 
 - (BOOL)routeIntent:(TPRouteIntent *)intent;
