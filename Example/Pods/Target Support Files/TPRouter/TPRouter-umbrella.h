@@ -10,6 +10,7 @@
 #endif
 #endif
 
+#import "TPRouteInterruptionManager.h"
 #import "TPRouteManager.h"
 #import "TPRouter.h"
 #import "TPRouteTrie.h"
