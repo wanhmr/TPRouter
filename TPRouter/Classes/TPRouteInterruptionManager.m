@@ -13,19 +13,10 @@ NSString const* TPRouteInterruptionTypeKey = @"TPRouteInterruptionTypeKey";
 @interface TPRouteInterruptionManager ()
 
 @property (nonatomic, assign) NSInteger count;
-@property (nonatomic, strong) NSLock *lock;
 
 @end
 
 @implementation TPRouteInterruptionManager
-
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _lock = [NSLock new];
-    }
-    return self;
-}
 
 + (instancetype)sharedManager {
     static TPRouteInterruptionManager *manager;
@@ -37,14 +28,11 @@ NSString const* TPRouteInterruptionTypeKey = @"TPRouteInterruptionTypeKey";
 }
 
 - (void)increaseInterruption {
-    [self.lock lock];
-    if (self.count == 0) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:TPRouteInterruptionNotification
-                                                            object:self
-                                                          userInfo:@{TPRouteInterruptionTypeKey: @(TPRouteInterruptionTypeBegan)}];
-    }
+    BOOL shouldPostBegan = self.count == 0;
     self.count++;
-    [self.lock unlock];
+    if (shouldPostBegan) {
+        [self postInterruptionBegan];
+    }
 }
 
 - (void)decreaseInterruption {
@@ -52,18 +40,26 @@ NSString const* TPRouteInterruptionTypeKey = @"TPRouteInterruptionTypeKey";
         NSAssert(NO, @"The increase and decrease mismatch.");
         return;
     }
-    [self.lock lock];
     self.count--;
     if (self.count == 0) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:TPRouteInterruptionNotification
-                                                            object:self
-                                                          userInfo:@{TPRouteInterruptionTypeKey: @(TPRouteInterruptionTypeEnded)}];
+        [self postInterruptionEnded];
     }
-    [self.lock unlock];
+}
+
+- (void)postInterruptionBegan {
+    [[NSNotificationCenter defaultCenter] postNotificationName:TPRouteInterruptionNotification
+                                                        object:self
+                                                      userInfo:@{TPRouteInterruptionTypeKey: @(TPRouteInterruptionTypeBegan)}];
+}
+
+- (void)postInterruptionEnded {
+    [[NSNotificationCenter defaultCenter] postNotificationName:TPRouteInterruptionNotification
+                                                        object:self
+                                                      userInfo:@{TPRouteInterruptionTypeKey: @(TPRouteInterruptionTypeEnded)}];
 }
 
 - (BOOL)isInterrupted {
-    return self.count == 0;
+    return self.count != 0;
 }
 
 @end
