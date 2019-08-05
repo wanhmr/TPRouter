@@ -28,9 +28,8 @@ NSString const* TPRouteInterruptionTypeKey = @"TPRouteInterruptionTypeKey";
 }
 
 - (void)increaseInterruption {
-    BOOL shouldPostBegan = self.count == 0;
     self.count++;
-    if (shouldPostBegan) {
+    if (self.count == 1) {
         [self postInterruptionBegan];
     }
 }
@@ -59,7 +58,7 @@ NSString const* TPRouteInterruptionTypeKey = @"TPRouteInterruptionTypeKey";
 }
 
 - (BOOL)isInterrupted {
-    return self.count != 0;
+    return self.count > 0;
 }
 
 @end
