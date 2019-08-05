@@ -23,7 +23,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 
 #pragma mark - TPRoutableLaunching
 
-- (BOOL)router:(TPRouter *)router launchRoutable:(id<TPRoutable>)routable forIntent:(TPRouteIntent *)intent {
+- (BOOL)launchRoutable:(id<TPRoutable>)routable router:(TPRouter *)router params:(nullable NSDictionary *)params {
     return NO;
 }
 
@@ -42,7 +42,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 
 #pragma mark - TPRoutableLaunching
 
-- (BOOL)router:(TPRouter *)router launchRoutable:(id<TPViewRoutable>)routable forIntent:(TPRouteIntent *)intent {
+- (BOOL)launchRoutable:(id<TPViewRoutable>)routable router:(TPRouter *)router params:(nullable NSDictionary *)params {
     UIViewController *routableViewController = nil;
     if ([routable respondsToSelector:@selector(viewControllerForLaunching)]) {
         routableViewController = [routable viewControllerForLaunching];
@@ -85,7 +85,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 
 @interface TPRouteIntent ()
 
-@property (nonatomic, strong) NSMutableDictionary *params;
+@property (nonatomic, strong) NSMutableDictionary *internalExtras;
 
 @end
 
@@ -94,7 +94,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _params = [NSMutableDictionary new];
+        _internalExtras = [NSMutableDictionary new];
     }
     return self;
 }
@@ -109,6 +109,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 }
 
 - (instancetype)initWithClazz:(Class)clazz routableLauncher:(id<TPRoutableLaunching>)routableLauncher {
+    NSAssert([clazz conformsToProtocol:@protocol(TPRoutable)], @"The clazz does't conforms to TPRoutable");
     self = [self init];
     if (self) {
         _clazz = clazz;
@@ -122,7 +123,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
         return;
     }
     
-    [self.params addEntriesFromDictionary:extraDatas];
+    [self.internalExtras addEntriesFromDictionary:extraDatas];
 }
 
 - (void)putExtraValue:(id)value forKey:(NSString *)key {
@@ -130,13 +131,13 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
         return;
     }
     
-    self.params[key] = value;
+    self.internalExtras[key] = value;
 }
 
 #pragma mark - Custom Accessors
 
 - (NSDictionary *)extras {
-    return self.params.copy;
+    return self.internalExtras.copy;
 }
 
 @end
@@ -167,7 +168,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 }
 
 - (void)registerURL:(NSURL *)url routableClass:(Class)routableClass; {
-    NSAssert([routableClass conformsToProtocol:@protocol(TPRoutable)], @"The routableClass is't conforms to TPRoutable");
+    NSAssert([routableClass conformsToProtocol:@protocol(TPRoutable)], @"The routable class does't conforms to TPRoutable");
     [[self routeMangerForURL:url] registerURL:url clazz:routableClass];
 }
 
@@ -179,18 +180,34 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
     return [[self routeMangerForURL:url] hasRegisteredURL:url];
 }
 
+- (Class)searchRoutableClassWithURL:(NSURL *)url params:(NSDictionary *__autoreleasing  _Nullable * _Nullable)params {
+    return [[self routeMangerForURL:url] searchValueWithURL:url params:params];
+}
+
 - (BOOL)routeIntent:(TPRouteIntent *)intent {
-    BOOL result = NO;
-    
-    if ([self.delegate respondsToSelector:@selector(router:willRouteIntent:)]) {
-        [self.delegate router:self willRouteIntent:intent];
+    NSDictionary *params = nil;
+    id<TPRoutable> routable = [self routableForIntent:intent params:&params];
+    if (!routable) {
+        return NO;
     }
     
-    id<TPRoutable> routable = [self routableForIntent:intent];
-    result = [intent.routableLauncher router:self launchRoutable:routable forIntent:intent];
+    if ([self.delegate respondsToSelector:@selector(router:shouldRouteIntent:destinationRoutable:params:)]) {
+        BOOL shouldRoute = [self.delegate router:self shouldRouteIntent:intent destinationRoutable:routable params:params];
+        if (!shouldRoute) {
+            return NO;
+        }
+    }
     
-    if ([self.delegate respondsToSelector:@selector(router:didRouteIntent:)]) {
-        [self.delegate router:self didRouteIntent:intent];
+    BOOL result = NO;
+    
+    if ([self.delegate respondsToSelector:@selector(router:willRouteIntent:destinationRoutable:params:)]) {
+        [self.delegate router:self willRouteIntent:intent destinationRoutable:routable params:params];
+    }
+    
+    result = [intent.routableLauncher launchRoutable:routable router:self params:params];
+    
+    if ([self.delegate respondsToSelector:@selector(router:didRouteIntent:destinationRoutable:params:)]) {
+        [self.delegate router:self didRouteIntent:intent destinationRoutable:routable params:params];
     }
     
     return result;
@@ -198,18 +215,25 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 
 #pragma mark - Private
 
-- (id<TPRoutable>)routableForIntent:(TPRouteIntent *)intent {
-    __block Class routableClass = NULL;
+- (id<TPRoutable>)routableForIntent:(TPRouteIntent *)intent params:(NSDictionary * _Nullable * _Nullable)params {
+    Class routableClass = NULL;
+    NSMutableDictionary *totalPrams = [(intent.extras ? : @{}) mutableCopy];
     if (intent.clazz) {
         routableClass = intent.clazz;
     } else if (intent.url) {
-        [[self routeMangerForURL:intent.url] searchValueWithURL:intent.url completion:^(id  _Nonnull value, NSDictionary * _Nonnull params) {
-            routableClass = value;
-            [intent putExtraDatas:params];
-        }];
+        NSDictionary *urlParams = nil;
+        routableClass = [self searchRoutableClassWithURL:intent.url params:&urlParams];
+        if (urlParams) {
+            [totalPrams addEntriesFromDictionary:urlParams];
+        }
     }
     
-    return [(id<TPRoutable>)[routableClass alloc] initWithExtras:intent.params];
+    if (params && totalPrams.allKeys.count > 0) {
+        *params = totalPrams.copy;
+    }
+    
+    id<TPRoutable> routable = [(id<TPRoutable>)[routableClass alloc] initWithParams:totalPrams.copy];
+    return routable;
 }
 
 - (TPRouteManager *)routeMangerForURL:(NSURL *)url {

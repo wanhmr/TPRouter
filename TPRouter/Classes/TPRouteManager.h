@@ -19,7 +19,7 @@ FOUNDATION_EXPORT NSString const* TPRouteURLKey;
 
 - (BOOL)hasRegisteredURL:(NSURL *)url;
 
-- (void)searchValueWithURL:(NSURL *)url completion:(void(^ NS_NOESCAPE)(id value, NSDictionary *params))completion;
+- (nullable id)searchValueWithURL:(NSURL *)url params:(NSDictionary * _Nullable * _Nullable)params;
 
 @end
 

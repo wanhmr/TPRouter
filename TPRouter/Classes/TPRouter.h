@@ -25,7 +25,7 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 @required
 
-- (BOOL)router:(TPRouter *)router launchRoutable:(id<TPRoutable>)routable forIntent:(TPRouteIntent *)intent;
+- (BOOL)launchRoutable:(id<TPRoutable>)routable router:(TPRouter *)router params:(nullable NSDictionary *)params;
 
 @end
 
@@ -45,8 +45,8 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 @interface TPRouteIntent : NSObject
 
-@property (nullable, nonatomic, strong, readonly) NSURL *url;
-@property (nullable, nonatomic, strong, readonly) Class clazz;
+@property (nullable, strong, readonly) NSURL *url;
+@property (nullable, assign, readonly) Class clazz;
 @property (nonatomic, strong) id<TPRoutableLaunching> routableLauncher;
 
 @property (nonatomic, copy, readonly) NSDictionary *extras;
@@ -60,6 +60,7 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 - (void)putExtraValue:(id)value forKey:(NSString *)key;
 
 @end
+
 
 @interface TPRouter : NSObject
 
@@ -77,6 +78,8 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 - (BOOL)hasRegisteredURL:(NSURL *)url;
 
+- (Class)searchRoutableClassWithURL:(NSURL *)url params:(NSDictionary * _Nullable * _Nullable)params;
+
 - (BOOL)routeIntent:(TPRouteIntent *)intent;
 
 @end
@@ -85,8 +88,9 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 @optional
 
-- (void)router:(TPRouter *)router willRouteIntent:(TPRouteIntent *)intent;
-- (void)router:(TPRouter *)router didRouteIntent:(TPRouteIntent *)intent;
+- (BOOL)router:(TPRouter *)router shouldRouteIntent:(TPRouteIntent *)intent destinationRoutable:(id<TPRoutable>)destinationRoutable params:(nullable NSDictionary *)params;
+- (void)router:(TPRouter *)router willRouteIntent:(TPRouteIntent *)intent destinationRoutable:(id<TPRoutable>)destinationRoutable params:(nullable NSDictionary *)params;
+- (void)router:(TPRouter *)router didRouteIntent:(TPRouteIntent *)intent destinationRoutable:(id<TPRoutable>)destinationRoutable params:(nullable NSDictionary *)params;
 
 @end
 
@@ -94,7 +98,7 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 @required
 
-- (instancetype)initWithExtras:(nullable NSDictionary *)extras;
+- (instancetype)initWithParams:(nullable NSDictionary *)params;
 
 @end
 

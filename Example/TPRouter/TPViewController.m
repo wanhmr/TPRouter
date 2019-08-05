@@ -15,8 +15,8 @@
 
 @implementation TPViewController
 
-- (instancetype)initWithExtras:(NSDictionary *)extras {
-    NSLog(@"extras data: %@", extras);
+- (instancetype)initWithParams:(NSDictionary *)params {
+    NSLog(@"params data: %@", params);
     return
     [[UIStoryboard storyboardWithName:@"Main" bundle:nil]
      instantiateViewControllerWithIdentifier:@"first"];

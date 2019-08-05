@@ -47,10 +47,13 @@ NSString const* TPRouteURLKey = @"RouteURL";
     return node.value != nil;
 }
 
-- (void)searchValueWithURL:(NSURL *)url completion:(void(^ NS_NOESCAPE)(id value, NSDictionary *params))completion {
+- (id)searchValueWithURL:(NSURL *)url params:(NSDictionary * _Nullable * _Nullable)params {
     TPRouteTrieNode *node = [self.routes searchNodeWithURL:url];
-    NSDictionary *params = [self.routes extractMatchedPatternFromURL:url resultNode:node];
-    completion(node.value, [self extractParametersFromURL:url defaultParams:params]);
+    NSDictionary *tempParams = [self.routes extractMatchedPatternFromURL:url resultNode:node];
+    if (params) {
+        *params = [self extractParametersFromURL:url defaultParams:tempParams];
+    }
+    return node.value;
 }
 
 #pragma mark - Private
