@@ -99,21 +99,19 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
     return self;
 }
 
-- (instancetype)initWithURL:(NSURL *)url routableLauncher:(id<TPRoutableLaunching>)routableLauncher {
+- (instancetype)initWithURL:(NSURL *)url {
     self = [self init];
     if (self) {
         _url = url;
-        _routableLauncher = routableLauncher;
     }
     return self;
 }
 
-- (instancetype)initWithClazz:(Class)clazz routableLauncher:(id<TPRoutableLaunching>)routableLauncher {
+- (instancetype)initWithClazz:(Class)clazz {
     NSAssert([clazz conformsToProtocol:@protocol(TPRoutable)], @"The clazz does't conforms to TPRoutable");
     self = [self init];
     if (self) {
         _clazz = clazz;
-        _routableLauncher = routableLauncher;
     }
     return self;
 }

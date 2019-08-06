@@ -46,13 +46,13 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 @property (nullable, strong, readonly) NSURL *url;
 @property (nullable, assign, readonly) Class clazz;
-@property (nonatomic, strong) id<TPRoutableLaunching> routableLauncher;
+@property (nullable, nonatomic, strong) id<TPRoutableLaunching> routableLauncher;
 
 @property (nonatomic, copy, readonly) NSDictionary *extras;
 
-- (instancetype)initWithURL:(NSURL *)url routableLauncher:(id<TPRoutableLaunching>)routableLauncher;
+- (instancetype)initWithURL:(NSURL *)url;
 
-- (instancetype)initWithClazz:(Class)clazz routableLauncher:(id<TPRoutableLaunching>)routableLauncher;
+- (instancetype)initWithClazz:(Class)clazz;
 
 - (void)putExtraDatas:(NSDictionary *)extraDatas;
 
