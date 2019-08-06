@@ -23,7 +23,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 
 #pragma mark - TPRoutableLaunching
 
-- (BOOL)launchRoutable:(id<TPRoutable>)routable router:(TPRouter *)router params:(nullable NSDictionary *)params {
+- (BOOL)launchRoutable:(id<TPRoutable>)routable router:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params {
     return NO;
 }
 
@@ -42,10 +42,10 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 
 #pragma mark - TPRoutableLaunching
 
-- (BOOL)launchRoutable:(id<TPViewRoutable>)routable router:(TPRouter *)router params:(nullable NSDictionary *)params {
+- (BOOL)launchRoutable:(id<TPViewRoutable>)routable router:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params {
     UIViewController *routableViewController = nil;
-    if ([routable respondsToSelector:@selector(viewControllerForLaunching)]) {
-        routableViewController = [routable viewControllerForLaunching];
+    if ([routable respondsToSelector:@selector(viewControllerForRoutableLaunching)]) {
+        routableViewController = [routable viewControllerForRoutableLaunching];
     } else if ([routable isKindOfClass:UIViewController.class]) {
         routableViewController = (UIViewController *)routable;
     }
@@ -54,7 +54,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
         return NO;
     }
     
-    UIViewController *sourceViewController = self.sourceViewController ? : router.topmostViewController;
+    UIViewController *sourceViewController = [source isKindOfClass:UIViewController.class] ? source : router.topmostViewController;
     BOOL result = YES;
     switch (self.mode) {
         case TPViewRoutableLaunchModeAuto: {
@@ -184,7 +184,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
     return [self.routeManager searchClazzWithURL:url params:params];
 }
 
-- (BOOL)routeIntent:(TPRouteIntent *)intent {
+- (BOOL)routeIntent:(TPRouteIntent *)intent source:(id)source {
     NSDictionary *params = nil;
     id<TPRoutable> routable = [self routableForIntent:intent params:&params];
     if (!routable) {
@@ -204,13 +204,23 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
         [self.delegate router:self willRouteIntent:intent destinationRoutable:routable params:params];
     }
     
-    result = [intent.routableLauncher launchRoutable:routable router:self params:params];
+    id<TPRoutableLaunching> routableLauncher = nil;
+    if (intent.routableLauncher) {
+        routableLauncher = intent.routableLauncher;
+    } else {
+        routableLauncher = routable.routableLauncher;
+    }
+    result = [routableLauncher launchRoutable:routable router:self source:source params:params];
     
     if ([self.delegate respondsToSelector:@selector(router:didRouteIntent:destinationRoutable:params:)]) {
         [self.delegate router:self didRouteIntent:intent destinationRoutable:routable params:params];
     }
     
     return result;
+}
+
+- (BOOL)routeIntent:(TPRouteIntent *)intent {
+    return [self routeIntent:intent source:nil];
 }
 
 #pragma mark - Private
@@ -247,7 +257,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 - (UIViewController *)rootViewController {
     UIWindow *window = self.window;
     if (!window) {
-        window = [UIApplication sharedApplication].delegate.window;
+        window = [UIApplication sharedApplication].keyWindow;
     }
     return window.rootViewController;
 }
