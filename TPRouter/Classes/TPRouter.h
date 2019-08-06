@@ -88,6 +88,7 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 @optional
 
+- (nullable id<TPRoutable>)router:(TPRouter *)router routableForIntent:(TPRouteIntent *)intent routableClazz:(Class)routableClazz params:(nullable NSDictionary *)params;
 - (BOOL)router:(TPRouter *)router shouldRouteIntent:(TPRouteIntent *)intent destinationRoutable:(id<TPRoutable>)destinationRoutable params:(nullable NSDictionary *)params;
 - (void)router:(TPRouter *)router willRouteIntent:(TPRouteIntent *)intent destinationRoutable:(id<TPRoutable>)destinationRoutable params:(nullable NSDictionary *)params;
 - (void)router:(TPRouter *)router didRouteIntent:(TPRouteIntent *)intent destinationRoutable:(id<TPRoutable>)destinationRoutable params:(nullable NSDictionary *)params;

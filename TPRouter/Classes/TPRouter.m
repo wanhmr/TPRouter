@@ -232,8 +232,14 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
         *params = totalPrams.copy;
     }
     
-    id<TPRoutable> routable = [(id<TPRoutable>)[routableClazz alloc] initWithParams:totalPrams.copy];
-    return routable;
+    if ([self.delegate respondsToSelector:@selector(router:routableForIntent:routableClazz:params:)]) {
+        id<TPRoutable> routable = [self.delegate router:self routableForIntent:intent routableClazz:routableClazz params:totalPrams];
+        if (routable) {
+            return routable;
+        }
+    }
+    
+    return [(id<TPRoutable>)[routableClazz alloc] initWithParams:totalPrams.copy];
 }
 
 #pragma mark - Custom Accessors
