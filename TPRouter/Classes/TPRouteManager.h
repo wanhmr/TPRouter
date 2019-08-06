@@ -15,11 +15,11 @@ FOUNDATION_EXPORT NSString const* TPRouteURLKey;
 
 - (BOOL)registerURL:(NSURL *)url clazz:(Class)clazz;
 
-- (BOOL)unregisterURL:(NSURL *)url;
+- (void)unregisterURL:(NSURL *)url;
 
 - (BOOL)hasRegisteredURL:(NSURL *)url;
 
-- (nullable id)searchValueWithURL:(NSURL *)url params:(NSDictionary * _Nullable * _Nullable)params;
+- (nullable Class)searchClazzWithURL:(NSURL *)url params:(NSDictionary * _Nullable * _Nullable)params;
 
 @end
 

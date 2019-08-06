@@ -9,20 +9,18 @@
 
 @implementation NSURL (TPRouteTrie)
 
-- (NSArray<NSString *> *)pathComponentsWithoutSlash {
-    NSString *first = self.pathComponents.firstObject;
-    if (![first isEqualToString:@"/"] ||
-        self.pathComponents.count == 0) {
-        return self.pathComponents;
+- (NSArray<NSString *> *)routeComponentsWithoutSlash {
+    NSArray *pathComponents = self.pathComponents;
+    NSMutableArray<NSString *> *compoments = pathComponents.count > 0 ? pathComponents.mutableCopy : @[].mutableCopy;
+    if ([compoments.firstObject isEqualToString:@"/"]) {
+        [compoments removeObjectAtIndex:0];
     }
     
-    NSMutableArray<NSString *> *array = self.pathComponents.mutableCopy;
-    [array removeObjectAtIndex:0];
-    return array.copy;
-}
-
-- (NSArray<NSURLQueryItem *> *)queryItems {
-    return [[NSURLComponents alloc] initWithURL:self resolvingAgainstBaseURL:NO].queryItems;
+    if (self.host.length > 0) {
+        [compoments insertObject:self.host atIndex:0];
+    }
+    
+    return compoments.copy;
 }
 
 @end
@@ -34,7 +32,7 @@
                        depth:(NSInteger)depth {
     self = [super init];
     if (self) {
-        _name = name.copy;
+        _key = name.copy;
         _value = value;
         _depth = depth;
         _children = [NSMutableDictionary new];
@@ -65,12 +63,12 @@
 }
 
 - (BOOL)isPlaceholder {
-    return [self.name hasPrefix:@":"];
+    return [self.key hasPrefix:@":"];
 }
 
 - (NSString *)placeholder {
     if (self.isPlaceholder) {
-        return [self.name substringFromIndex:NSMaxRange([self.name rangeOfString:@":"])];
+        return [self.key substringFromIndex:NSMaxRange([self.key rangeOfString:@":"])];
     }
     return nil;
 }
@@ -110,7 +108,7 @@
 }
 
 - (BOOL)insertValue:(id)value withURL:(NSURL *)url {
-    NSArray<NSString *> *components = url.pathComponentsWithoutSlash;
+    NSArray<NSString *> *components = url.routeComponentsWithoutSlash;
     if (!components || components.count == 0) {
         return NO;
     }
@@ -125,7 +123,7 @@
                 // check if any child is placeholder.
                 for (TPRouteTrieNode *node in currentNode.children.allValues) {
                     if ([node isPlaceholder]) {
-                        NSAssert(NO, @"Already have placeholder %@, can't insert another placeholder %@.", node.name, component);
+                        NSAssert(NO, @"Already have placeholder %@, can't insert another placeholder %@.", node.key, component);
                         return NO;
                     }
                 }
@@ -142,35 +140,35 @@
     TPRouteTrieNode *currentNode = node;
     while (currentNode.parent) {
         if ([currentNode isLeaf] && ![currentNode isTerminating]) {
-            currentNode.parent.children[currentNode.name] = nil;
+            currentNode.parent.children[currentNode.key] = nil;
         }
         currentNode = currentNode.parent;
     }
 }
 
 - (TPRouteTrieNode *)searchNodeWithURL:(NSURL *)url {
-    NSArray<NSString *> *components = url.pathComponentsWithoutSlash;
+    NSArray<NSString *> *components = url.routeComponentsWithoutSlash;
     if (!components || components.count == 0) {
         return nil;
     }
     
-    return [self searchNodeWithPathComponets:components rootNode:self.root];
+    return [self searchNodeWithRouteComponets:components rootNode:self.root];
 }
 
-- (TPRouteTrieNode *)searchNodeWithPathComponets:(NSArray<NSString *> *)pathComponents rootNode:(TPRouteTrieNode *)rootNode {
+- (TPRouteTrieNode *)searchNodeWithRouteComponets:(NSArray<NSString *> *)routeComponents rootNode:(TPRouteTrieNode *)rootNode {
     TPRouteTrieNode *resultNode = rootNode;
     
-    NSString *first = pathComponents.firstObject;
+    NSString *first = routeComponents.firstObject;
     if (first.length > 0) {
-        NSMutableArray<NSString *> *childrenPathComponents = pathComponents.mutableCopy;
-        [childrenPathComponents removeObjectAtIndex:0];
+        NSMutableArray<NSString *> *childrenRouteComponents = routeComponents.mutableCopy;
+        [childrenRouteComponents removeObjectAtIndex:0];
         NSArray<TPRouteTrieNode *> *children = [rootNode matchedChildrenForName:first];
         for (TPRouteTrieNode *childNode in children) {
-            TPRouteTrieNode *node = [self searchNodeWithPathComponets:childrenPathComponents rootNode:childNode];
+            TPRouteTrieNode *node = [self searchNodeWithRouteComponets:childrenRouteComponents rootNode:childNode];
             if (node.depth > resultNode.depth) {
                 resultNode = node;
             }
-            if (resultNode.depth - rootNode.depth == pathComponents.count) {
+            if (resultNode.depth - rootNode.depth == routeComponents.count) {
                 break;
             }
         }
@@ -184,12 +182,12 @@
 }
 
 - (TPRouteTrieNode *)searchNodeWithMatchPlaceholderWithURL:(NSURL *)url {
-    NSArray<NSString *> *components = url.pathComponentsWithoutSlash;
+    NSArray<NSString *> *components = url.routeComponentsWithoutSlash;
     if (!components || components.count == 0) {
         return nil;
     }
     
-    TPRouteTrieNode *node = [self searchNodeWithPathComponets:components rootNode:self.root];
+    TPRouteTrieNode *node = [self searchNodeWithRouteComponets:components rootNode:self.root];
     if (node.depth == components.count) {
         return node;
     }
@@ -198,7 +196,7 @@
 }
 
 - (TPRouteTrieNode *)searchNodeWithoutMatchPlaceholderWithURL:(NSURL *)url {
-    NSArray<NSString *> *components = url.pathComponentsWithoutSlash;
+    NSArray<NSString *> *components = url.routeComponentsWithoutSlash;
     if (!components || components.count == 0) {
         return nil;
     }
@@ -221,7 +219,7 @@
 }
 
 - (NSDictionary<NSString *, id> *)extractMatchedPatternFromURL:(NSURL *)url resultNode:(TPRouteTrieNode *)resultNode {
-    NSArray<NSString *> *components = url.pathComponentsWithoutSlash;
+    NSArray<NSString *> *components = url.routeComponentsWithoutSlash;
     if (!components || components.count == 0) {
         return @{};
     }
@@ -238,7 +236,7 @@
         if (matchNode) {
             [nodes removeLastObject];
             if ([matchNode isPlaceholder] &&
-                ![matchNode.name isEqualToString:component]) {
+                ![matchNode.key isEqualToString:component]) {
                 params[matchNode.placeholder] = component;
             }
         } else {

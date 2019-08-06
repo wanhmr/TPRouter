@@ -15,7 +15,8 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
-    [[TPRouter sharedRouter] registerURL:[NSURL URLWithString:@"app://user/:userId"] routableClass:TPViewController.class];
+    [[TPRouter sharedRouter] registerURL:[NSURL URLWithString:@"app://user"] routableClazz:TPViewController.class];
+    [[TPRouter sharedRouter] registerURL:[NSURL URLWithString:@"/user/:userID"] routableClazz:TPViewController.class];
     return YES;
 }
 

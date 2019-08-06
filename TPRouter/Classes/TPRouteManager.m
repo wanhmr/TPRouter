@@ -12,7 +12,8 @@ NSString const* TPRouteURLKey = @"RouteURL";
 
 @interface TPRouteManager ()
 
-@property (nonatomic, strong) TPRouteTrie *routes;
+@property (nonatomic, strong) TPRouteTrie *routesWithoutScheme;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, TPRouteTrie *> *schemesRoutes;
 
 @end
 
@@ -21,35 +22,41 @@ NSString const* TPRouteURLKey = @"RouteURL";
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _routes = [TPRouteTrie new];
+        _routesWithoutScheme = [TPRouteTrie new];
+        _schemesRoutes = [NSMutableDictionary new];
     }
     return self;
 }
 
 - (BOOL)registerURL:(NSURL *)url clazz:(Class)clazz {
-    TPRouteTrieNode *node = [self.routes searchNodeWithoutMatchPlaceholderWithURL:url];
+    TPRouteTrie *routes = [self routesForScheme:url.scheme];
+    TPRouteTrieNode *node = [routes searchNodeWithoutMatchPlaceholderWithURL:url];
     if (node) {
         node.value = clazz;
         return YES;
     }
     
     // not find it, insert
-    return [self.routes insertValue:clazz withURL:url];
+    return [routes insertValue:clazz withURL:url];
 }
 
-- (BOOL)unregisterURL:(NSURL *)url {
-    TPRouteTrieNode *node = [self.routes searchNodeWithoutMatchPlaceholderWithURL:url];
-    return node != nil;
+- (void)unregisterURL:(NSURL *)url {
+    TPRouteTrie *routes = [self routesForScheme:url.scheme];
+    TPRouteTrieNode *node = [routes searchNodeWithoutMatchPlaceholderWithURL:url];
+    node.value = nil;
+    [routes removeNode:node];
 }
 
 - (BOOL)hasRegisteredURL:(NSURL *)url {
-    TPRouteTrieNode *node = [self.routes searchNodeWithoutMatchPlaceholderWithURL:url];
+    TPRouteTrie *routes = [self routesForScheme:url.scheme];
+    TPRouteTrieNode *node = [routes searchNodeWithoutMatchPlaceholderWithURL:url];
     return node.value != nil;
 }
 
-- (id)searchValueWithURL:(NSURL *)url params:(NSDictionary * _Nullable * _Nullable)params {
-    TPRouteTrieNode *node = [self.routes searchNodeWithURL:url];
-    NSDictionary *tempParams = [self.routes extractMatchedPatternFromURL:url resultNode:node];
+- (Class)searchClazzWithURL:(NSURL *)url params:(NSDictionary * _Nullable * _Nullable)params {
+    TPRouteTrie *routes = [self routesForScheme:url.scheme];
+    TPRouteTrieNode *node = [routes searchNodeWithURL:url];
+    NSDictionary *tempParams = [routes extractMatchedPatternFromURL:url resultNode:node];
     if (params) {
         *params = [self extractParametersFromURL:url defaultParams:tempParams];
     }
@@ -66,7 +73,7 @@ NSString const* TPRouteURLKey = @"RouteURL";
     params[TPRouteURLKey] = url;
     
     // Add queries to params
-    NSArray<NSURLQueryItem *> *queryItems = url.queryItems;
+    NSArray<NSURLQueryItem *> *queryItems = [[NSURLComponents alloc] initWithURL:url resolvingAgainstBaseURL:NO].queryItems;
     for (NSURLQueryItem *queryItem in queryItems) {
         params[queryItem.name] = queryItem.value;
     }
@@ -75,6 +82,19 @@ NSString const* TPRouteURLKey = @"RouteURL";
     params[@"fragment"] = url.fragment;
     
     return params;
+}
+
+- (TPRouteTrie *)routesForScheme:(NSString *)scheme {
+    if (scheme.length == 0) {
+        return self.routesWithoutScheme;
+    }
+    
+    TPRouteTrie *routes = self.schemesRoutes[scheme];
+    if (!routes) {
+        routes = [TPRouteTrie new];
+        self.schemesRoutes[scheme] = routes;
+    }
+    return routes;
 }
 
 @end

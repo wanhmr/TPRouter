@@ -144,7 +144,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 
 @interface TPRouter ()
 
-@property (nonatomic, strong) NSMutableDictionary<NSString *, TPRouteManager *> *routeManagers;
+@property (nonatomic, strong) TPRouteManager *routeManager;
 
 @end
 
@@ -153,7 +153,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _routeManagers = [NSMutableDictionary new];
+        _routeManager = [TPRouteManager new];
     }
     return self;
 }
@@ -167,21 +167,21 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
     return router;
 }
 
-- (void)registerURL:(NSURL *)url routableClass:(Class)routableClass; {
-    NSAssert([routableClass conformsToProtocol:@protocol(TPRoutable)], @"The routable class does't conforms to TPRoutable");
-    [[self routeMangerForURL:url] registerURL:url clazz:routableClass];
+- (void)registerURL:(NSURL *)url routableClazz:(Class)routableClazz; {
+    NSAssert([routableClazz conformsToProtocol:@protocol(TPRoutable)], @"The routable class does't conforms to TPRoutable");
+    [self.routeManager registerURL:url clazz:routableClazz];
 }
 
 - (void)unregisterURL:(NSURL *)url {
-    [[self routeMangerForURL:url] unregisterURL:url];
+    [self.routeManager unregisterURL:url];
 }
 
 - (BOOL)hasRegisteredURL:(NSURL *)url {
-    return [[self routeMangerForURL:url] hasRegisteredURL:url];
+    return [self.routeManager hasRegisteredURL:url];
 }
 
-- (Class)searchRoutableClassWithURL:(NSURL *)url params:(NSDictionary *__autoreleasing  _Nullable * _Nullable)params {
-    return [[self routeMangerForURL:url] searchValueWithURL:url params:params];
+- (Class)searchRoutableClazzWithURL:(NSURL *)url params:(NSDictionary *__autoreleasing  _Nullable * _Nullable)params {
+    return [self.routeManager searchClazzWithURL:url params:params];
 }
 
 - (BOOL)routeIntent:(TPRouteIntent *)intent {
@@ -216,13 +216,13 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 #pragma mark - Private
 
 - (id<TPRoutable>)routableForIntent:(TPRouteIntent *)intent params:(NSDictionary * _Nullable * _Nullable)params {
-    Class routableClass = NULL;
+    Class routableClazz = NULL;
     NSMutableDictionary *totalPrams = [(intent.extras ? : @{}) mutableCopy];
     if (intent.clazz) {
-        routableClass = intent.clazz;
+        routableClazz = intent.clazz;
     } else if (intent.url) {
         NSDictionary *urlParams = nil;
-        routableClass = [self searchRoutableClassWithURL:intent.url params:&urlParams];
+        routableClazz = [self searchRoutableClazzWithURL:intent.url params:&urlParams];
         if (urlParams) {
             [totalPrams addEntriesFromDictionary:urlParams];
         }
@@ -232,21 +232,8 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
         *params = totalPrams.copy;
     }
     
-    id<TPRoutable> routable = [(id<TPRoutable>)[routableClass alloc] initWithParams:totalPrams.copy];
+    id<TPRoutable> routable = [(id<TPRoutable>)[routableClazz alloc] initWithParams:totalPrams.copy];
     return routable;
-}
-
-- (TPRouteManager *)routeMangerForURL:(NSURL *)url {
-    NSString *scheme = url.scheme;
-    if (scheme.length == 0) {
-        scheme = @"tpphha";
-    }
-    TPRouteManager *routeManager = self.routeManagers[scheme];
-    if (!routeManager) {
-        routeManager = [TPRouteManager new];
-        self.routeManagers[scheme] = routeManager;
-    }
-    return routeManager;
 }
 
 #pragma mark - Custom Accessors

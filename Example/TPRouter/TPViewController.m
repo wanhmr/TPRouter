@@ -26,6 +26,11 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    NSURL *url1 = [NSURL URLWithString:@"app://user/12"];
+    NSURL *url2 = [NSURL URLWithString:@"app://user/"];
+    NSURL *url3 = [NSURL URLWithString:@"app://user"];
+    NSURL *url4 = [NSURL URLWithString:@"/user/12"];
+    NSLog(@"%@, %@, %@", url1, url2, url3);
 }
 
 - (void)didReceiveMemoryWarning
@@ -36,7 +41,7 @@
 
 - (IBAction)nextAction:(id)sender {
     TPViewRoutableLauncher *launcher = [[TPViewRoutableLauncher alloc] initWithMode:TPViewRoutableLaunchModeAuto animated:YES];
-    TPRouteIntent *intent = [[TPRouteIntent alloc] initWithURL:[NSURL URLWithString:@"app://user/12"] routableLauncher:launcher];
+    TPRouteIntent *intent = [[TPRouteIntent alloc] initWithURL:[NSURL URLWithString:@"/user/12345"] routableLauncher:launcher];
     [[TPRouter sharedRouter] routeIntent:intent];
 }
 

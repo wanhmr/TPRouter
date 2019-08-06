@@ -72,13 +72,13 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 + (instancetype)sharedRouter;
 
-- (void)registerURL:(NSURL *)url routableClass:(Class)routableClass;
+- (void)registerURL:(NSURL *)url routableClazz:(Class)routableClazz;
 
 - (void)unregisterURL:(NSURL *)url;
 
 - (BOOL)hasRegisteredURL:(NSURL *)url;
 
-- (Class)searchRoutableClassWithURL:(NSURL *)url params:(NSDictionary * _Nullable * _Nullable)params;
+- (Class)searchRoutableClazzWithURL:(NSURL *)url params:(NSDictionary * _Nullable * _Nullable)params;
 
 - (BOOL)routeIntent:(TPRouteIntent *)intent;
 

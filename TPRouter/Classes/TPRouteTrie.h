@@ -12,19 +12,18 @@ NS_ASSUME_NONNULL_BEGIN
 @interface NSURL (TPRouteTrie)
 
 /**
- The path components without the first slash.
+ The route components without slash.
  
- - returns: array of path components without slash.
+ - returns: array of route components without slash.
  */
-@property (nullable, nonatomic, copy, readonly) NSArray<NSString *> *pathComponentsWithoutSlash;
-@property (nullable, nonatomic, copy, readonly) NSArray<NSURLQueryItem *> *queryItems;
+@property (nullable, nonatomic, copy, readonly) NSArray<NSString *> *routeComponentsWithoutSlash;
 
 @end
 
 @interface TPRouteTrieNode : NSObject
 
-@property (nonatomic, copy, readonly) NSString *name;
-@property (nonatomic, strong) id value;
+@property (nonatomic, copy, readonly) NSString *key;
+@property (nullable, nonatomic, strong) id value;
 @property (nonatomic, assign) NSInteger depth;
 @property (nonatomic, strong, readonly) NSMutableDictionary<NSString *, TPRouteTrieNode *> *children;
 @property (nullable, nonatomic, strong) TPRouteTrieNode *parent;
@@ -59,7 +58,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (TPRouteTrieNode *)searchNodeWithURL:(NSURL *)url;
 
-- (TPRouteTrieNode *)searchNodeWithPathComponets:(NSArray<NSString *> *)pathComponents rootNode:(TPRouteTrieNode *)rootNode;
+- (TPRouteTrieNode *)searchNodeWithRouteComponets:(NSArray<NSString *> *)routeComponents rootNode:(TPRouteTrieNode *)rootNode;
 
 /**
  Find the node for given url, considering placeholder such as ":id".
