@@ -40,9 +40,7 @@
 }
 
 - (IBAction)nextAction:(id)sender {
-    TPViewRoutableLauncher *launcher = [[TPViewRoutableLauncher alloc] initWithMode:TPViewRoutableLaunchModeAuto animated:YES];
     TPRouteIntent *intent = [[TPRouteIntent alloc] initWithURL:[NSURL URLWithString:@"/user/12345"]];
-    intent.routableLauncher = launcher;
     [[TPRouter sharedRouter] routeIntent:intent];
 }
 
