@@ -202,16 +202,14 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
         [self.delegate router:self willRouteIntent:intent destinationRoutable:routable params:params];
     }
     
-    id<TPRoutableLaunching> routableLauncher = nil;
     if (intent.routableLauncher) {
-        routableLauncher = intent.routableLauncher;
+        result = [intent.routableLauncher launchRoutable:routable router:self source:source params:params];
     } else {
-        routableLauncher = routable.routableLauncher;
+        result = [routable launchByRouter:self source:source params:params];
     }
-    result = [routableLauncher launchRoutable:routable router:self source:source params:params];
     
-    if ([self.delegate respondsToSelector:@selector(router:didRouteIntent:destinationRoutable:params:)]) {
-        [self.delegate router:self didRouteIntent:intent destinationRoutable:routable params:params];
+    if ([self.delegate respondsToSelector:@selector(router:didRouteIntent:destinationRoutable:params:result:)]) {
+        [self.delegate router:self didRouteIntent:intent destinationRoutable:routable params:params result:result];
     }
     
     return result;
