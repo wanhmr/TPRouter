@@ -42,7 +42,7 @@
 
 @implementation TPViewController
 
-- (instancetype)initWithParams:(NSDictionary *)params {
+- (instancetype)initWithRouteParams:(NSDictionary *)params {
     NSLog(@"params data: %@", params);
     return
     [[UIStoryboard storyboardWithName:@"Main" bundle:nil]
@@ -58,13 +58,13 @@
     NSURL *url3 = [NSURL URLWithString:@"app://user"];
     NSURL *url4 = [NSURL URLWithString:@"/user/12"];
     NSLog(@"%@, %@, %@", url1, url2, url3);
-    self.testViewController = [TPTestViewController new];
-    [self.testViewController willMoveToParentViewController:self];
-    self.testViewController.view.frame = self.view.bounds;
-    self.testViewController.view.userInteractionEnabled = NO;
+//    self.testViewController = [TPTestViewController new];
+//    [self.testViewController willMoveToParentViewController:self];
+//    self.testViewController.view.frame = self.view.bounds;
+//    self.testViewController.view.userInteractionEnabled = NO;
 //    self.testViewController.definesPresentationContext = YES;
-    [self.view addSubview:self.testViewController.view];
-    [self addChildViewController:self.testViewController];
+//    [self.view addSubview:self.testViewController.view];
+//    [self addChildViewController:self.testViewController];
     
     self.definesPresentationContext = YES;
 }
@@ -93,7 +93,7 @@
 //    [self.testViewController presentViewController:panelViewController animated:YES completion:nil];
     
     TPRouteIntent *intent = [[TPRouteIntent alloc] initWithURL:[NSURL URLWithString:@"/user/12345"]];
-    [[TPRouter sharedRouter] routeIntent:intent];
+    [[TPRouter sharedRouter] startRoutableWithIntent:intent];
 }
 
 - (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source {

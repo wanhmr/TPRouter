@@ -191,7 +191,7 @@ static UIViewController* TPTopmostViewControllerFromViewController(UIViewControl
     return [self.routeManager searchClazzWithURL:url params:params];
 }
 
-- (BOOL)routeIntent:(TPRouteIntent *)intent source:(id)source {
+- (BOOL)startRoutableWithIntent:(TPRouteIntent *)intent source:(id)source {
     NSDictionary *params = nil;
     id<TPRoutable> routable = [self routableForIntent:intent params:&params];
     if (!routable) {
@@ -232,8 +232,8 @@ static UIViewController* TPTopmostViewControllerFromViewController(UIViewControl
     return result;
 }
 
-- (BOOL)routeIntent:(TPRouteIntent *)intent {
-    return [self routeIntent:intent source:nil];
+- (BOOL)startRoutableWithIntent:(TPRouteIntent *)intent {
+    return [self startRoutableWithIntent:intent source:nil];
 }
 
 #pragma mark - Private
@@ -262,8 +262,8 @@ static UIViewController* TPTopmostViewControllerFromViewController(UIViewControl
         }
     }
     
-    if ([routableClazz instancesRespondToSelector:@selector(initWithParams:)]) {
-        return [(id<TPRoutable>)[routableClazz alloc] initWithParams:totalPrams.copy];
+    if ([routableClazz instancesRespondToSelector:@selector(initWithRouteParams:)]) {
+        return [(id<TPRoutable>)[routableClazz alloc] initWithRouteParams:totalPrams.copy];
     }
     
     return (id<TPRoutable>)[routableClazz new];
