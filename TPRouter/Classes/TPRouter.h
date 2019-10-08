@@ -104,7 +104,7 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 @optional
 
-- (instancetype)initWithRouteParams:(nullable NSDictionary *)params;
+- (instancetype)initWithRoutableParams:(nullable NSDictionary *)params;
 
 - (id<TPRoutableLaunching>)routableLauncher;
 

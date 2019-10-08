@@ -262,8 +262,8 @@ static UIViewController* TPTopmostViewControllerFromViewController(UIViewControl
         }
     }
     
-    if ([routableClazz instancesRespondToSelector:@selector(initWithRouteParams:)]) {
-        return [(id<TPRoutable>)[routableClazz alloc] initWithRouteParams:totalPrams.copy];
+    if ([routableClazz instancesRespondToSelector:@selector(initWithRoutableParams:)]) {
+        return [(id<TPRoutable>)[routableClazz alloc] initWithRoutableParams:totalPrams.copy];
     }
     
     return (id<TPRoutable>)[routableClazz new];

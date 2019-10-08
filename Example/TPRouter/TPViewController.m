@@ -42,7 +42,7 @@
 
 @implementation TPViewController
 
-- (instancetype)initWithRouteParams:(NSDictionary *)params {
+- (instancetype)initWithRoutableParams:(NSDictionary *)params {
     NSLog(@"params data: %@", params);
     return
     [[UIStoryboard storyboardWithName:@"Main" bundle:nil]
