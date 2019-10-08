@@ -25,7 +25,7 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 @required
 
-- (BOOL)launchRoutable:(id<TPRoutable>)routable router:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params;
+- (BOOL)launchRoutable:(id<TPRoutable>)routable byRouter:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params;
 
 @end
 
@@ -39,6 +39,10 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 @property (nonatomic, assign) BOOL animated;
 
 - (instancetype)initWithMode:(TPViewRoutableLaunchMode)mode animated:(BOOL)animated;
+
+@end
+
+@interface TPOperationRoutableLauncher : TPRoutableLauncher
 
 @end
 
@@ -98,13 +102,11 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 
 @protocol TPRoutable <NSObject>
 
-@required
+@optional
 
 - (instancetype)initWithParams:(nullable NSDictionary *)params;
 
-@optional
-
-- (BOOL)launchByRouter:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params;
+- (id<TPRoutableLaunching>)routableLauncher;
 
 @end
 
@@ -113,6 +115,12 @@ typedef NS_ENUM(NSInteger, TPViewRoutableLaunchMode) {
 @optional
 
 - (UIViewController *)viewControllerForRoutableLaunching;
+
+@end
+
+@protocol TPOperationRoutable <TPRoutable>
+
+- (BOOL)launchByRouter:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params;
 
 @end
 

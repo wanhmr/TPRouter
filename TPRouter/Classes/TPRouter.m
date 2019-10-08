@@ -8,13 +8,13 @@
 #import "TPRouter.h"
 #import "TPRouteManager.h"
 
-static UIViewController* TPTopmostViewControllerWithViewController(UIViewController *viewController) {
+static UIViewController* TPTopmostViewControllerFromViewController(UIViewController *viewController) {
     if (viewController.presentedViewController) {
-        return TPTopmostViewControllerWithViewController(viewController.presentedViewController);
+        return TPTopmostViewControllerFromViewController(viewController.presentedViewController);
     } else if ([viewController isKindOfClass:UITabBarController.class]) {
-        return TPTopmostViewControllerWithViewController([(UITabBarController *)viewController selectedViewController]);
+        return TPTopmostViewControllerFromViewController([(UITabBarController *)viewController selectedViewController]);
     } else if ([viewController isKindOfClass:UINavigationController.class]) {
-        return TPTopmostViewControllerWithViewController([(UINavigationController *)viewController topViewController]);
+        return TPTopmostViewControllerFromViewController([(UINavigationController *)viewController topViewController]);
     }
     return viewController;
 }
@@ -23,7 +23,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 
 #pragma mark - TPRoutableLaunching
 
-- (BOOL)launchRoutable:(id<TPRoutable>)routable router:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params {
+- (BOOL)launchRoutable:(id<TPRoutable>)routable byRouter:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params {
     return NO;
 }
 
@@ -42,7 +42,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 
 #pragma mark - TPRoutableLaunching
 
-- (BOOL)launchRoutable:(id<TPViewRoutable>)routable router:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params {
+- (BOOL)launchRoutable:(id<TPViewRoutable>)routable byRouter:(TPRouter *)router source:(nullable id)source params:(nullable NSDictionary *)params {
     UIViewController *routableViewController = nil;
     if ([routable respondsToSelector:@selector(viewControllerForRoutableLaunching)]) {
         routableViewController = [routable viewControllerForRoutableLaunching];
@@ -79,6 +79,15 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
     }
     
     return result;
+}
+
+@end
+
+@implementation TPOperationRoutableLauncher
+
+- (BOOL)launchRoutable:(id<TPRoutable>)routable byRouter:(TPRouter *)router source:(id)source params:(NSDictionary *)params {
+    id<TPOperationRoutable> operationRoutable = (id<TPOperationRoutable>)routable;
+    return [operationRoutable launchByRouter:router source:source params:params];
 }
 
 @end
@@ -202,16 +211,19 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
         [self.delegate router:self willRouteIntent:intent destinationRoutable:routable params:params];
     }
     
-    if (intent.routableLauncher) {
-        result = [intent.routableLauncher launchRoutable:routable router:self source:source params:params];
-    } else {
-        if ([routable respondsToSelector:@selector(launchByRouter:source:params:)]) {
-            result = [routable launchByRouter:self source:source params:params];
+    id<TPRoutableLaunching> routableLauncher = intent.routableLauncher;
+    if (!routableLauncher) {
+        if ([routable respondsToSelector:@selector(routableLauncher)]) {
+            routableLauncher = [routable routableLauncher];
+        } else if ([routable conformsToProtocol:@protocol(TPViewRoutable)]) {
+            routableLauncher = [[TPViewRoutableLauncher alloc] initWithMode:TPViewRoutableLaunchModeAuto animated:YES];
+        } else if ([routable conformsToProtocol:@protocol(TPOperationRoutable)]) {
+            routableLauncher = [TPOperationRoutableLauncher new];
         } else {
-            TPViewRoutableLauncher *viewRoutableLauncher = [[TPViewRoutableLauncher alloc] initWithMode:TPViewRoutableLaunchModeAuto animated:YES];
-            result = [viewRoutableLauncher launchRoutable:routable router:self source:source params:params];
+            NSAssert(NO, @"The routableLauncher can not be nil.");
         }
     }
+    result = [routableLauncher launchRoutable:routable byRouter:self source:source params:params];
     
     if ([self.delegate respondsToSelector:@selector(router:didRouteIntent:destinationRoutable:params:result:)]) {
         [self.delegate router:self didRouteIntent:intent destinationRoutable:routable params:params result:result];
@@ -250,7 +262,11 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
         }
     }
     
-    return [(id<TPRoutable>)[routableClazz alloc] initWithParams:totalPrams.copy];
+    if ([routableClazz instancesRespondToSelector:@selector(initWithParams:)]) {
+        return [(id<TPRoutable>)[routableClazz alloc] initWithParams:totalPrams.copy];
+    }
+    
+    return (id<TPRoutable>)[routableClazz new];
 }
 
 #pragma mark - Custom Accessors
@@ -264,7 +280,7 @@ static UIViewController* TPTopmostViewControllerWithViewController(UIViewControl
 }
 
 - (UIViewController *)topmostViewController {
-    return TPTopmostViewControllerWithViewController(self.rootViewController);
+    return TPTopmostViewControllerFromViewController(self.rootViewController);
 }
 
 @end

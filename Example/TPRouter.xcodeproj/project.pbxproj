@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3D37254422FBC81A00F019D8 /* TPTestViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D37254322FBC81A00F019D8 /* TPTestViewController.m */; };
+		3D99A71E22FABA0000795B1A /* TPPanelViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D99A71D22FABA0000795B1A /* TPPanelViewController.m */; };
 		6003F58E195388D20070C39A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58D195388D20070C39A /* Foundation.framework */; };
 		6003F590195388D20070C39A /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F58F195388D20070C39A /* CoreGraphics.framework */; };
 		6003F592195388D20070C39A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6003F591195388D20070C39A /* UIKit.framework */; };
@@ -39,6 +41,10 @@
 /* Begin PBXFileReference section */
 		0D1979A66422AB58700AD9B2 /* TPRouter.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = TPRouter.podspec; path = ../TPRouter.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		2163793F81D0235AA7AAF339 /* Pods_TPRouter_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TPRouter_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3D37254222FBC81A00F019D8 /* TPTestViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPTestViewController.h; sourceTree = "<group>"; };
+		3D37254322FBC81A00F019D8 /* TPTestViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPTestViewController.m; sourceTree = "<group>"; };
+		3D99A71C22FABA0000795B1A /* TPPanelViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPPanelViewController.h; sourceTree = "<group>"; };
+		3D99A71D22FABA0000795B1A /* TPPanelViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPPanelViewController.m; sourceTree = "<group>"; };
 		46A8CB37A7D19BA79ACF8657 /* Pods-TPRouter_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TPRouter_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-TPRouter_Tests/Pods-TPRouter_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		52896F027665A70E8F76C23E /* Pods_TPRouter_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_TPRouter_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58A195388D20070C39A /* TPRouter_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TPRouter_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -140,6 +146,10 @@
 				71719F9D1E33DC2100824A3D /* LaunchScreen.storyboard */,
 				6003F5A8195388D20070C39A /* Images.xcassets */,
 				6003F594195388D20070C39A /* Supporting Files */,
+				3D99A71C22FABA0000795B1A /* TPPanelViewController.h */,
+				3D99A71D22FABA0000795B1A /* TPPanelViewController.m */,
+				3D37254222FBC81A00F019D8 /* TPTestViewController.h */,
+				3D37254322FBC81A00F019D8 /* TPTestViewController.m */,
 			);
 			name = "Example for TPRouter";
 			path = TPRouter;
@@ -368,7 +378,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D37254422FBC81A00F019D8 /* TPTestViewController.m in Sources */,
 				6003F59E195388D20070C39A /* TPAppDelegate.m in Sources */,
+				3D99A71E22FABA0000795B1A /* TPPanelViewController.m in Sources */,
 				6003F5A7195388D20070C39A /* TPViewController.m in Sources */,
 				6003F59A195388D20070C39A /* main.m in Sources */,
 			);
