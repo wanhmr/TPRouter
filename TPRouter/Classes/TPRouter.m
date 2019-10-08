@@ -198,8 +198,8 @@ static UIViewController* TPTopmostViewControllerFromViewController(UIViewControl
         return NO;
     }
     
-    if ([self.delegate respondsToSelector:@selector(router:shouldRouteIntent:destinationRoutable:params:)]) {
-        BOOL shouldRoute = [self.delegate router:self shouldRouteIntent:intent destinationRoutable:routable params:params];
+    if ([self.delegate respondsToSelector:@selector(router:shouldStartRoutable:forIntent:params:)]) {
+        BOOL shouldRoute = [self.delegate router:self shouldStartRoutable:routable forIntent:intent params:params];
         if (!shouldRoute) {
             return NO;
         }
@@ -207,8 +207,8 @@ static UIViewController* TPTopmostViewControllerFromViewController(UIViewControl
     
     BOOL result = NO;
     
-    if ([self.delegate respondsToSelector:@selector(router:willRouteIntent:destinationRoutable:params:)]) {
-        [self.delegate router:self willRouteIntent:intent destinationRoutable:routable params:params];
+    if ([self.delegate respondsToSelector:@selector(router:willStartRoutable:forIntent:params:)]) {
+        [self.delegate router:self willStartRoutable:routable forIntent:intent params:params];
     }
     
     id<TPRoutableLaunching> routableLauncher = intent.routableLauncher;
@@ -225,8 +225,8 @@ static UIViewController* TPTopmostViewControllerFromViewController(UIViewControl
     }
     result = [routableLauncher launchRoutable:routable byRouter:self source:source params:params];
     
-    if ([self.delegate respondsToSelector:@selector(router:didRouteIntent:destinationRoutable:params:result:)]) {
-        [self.delegate router:self didRouteIntent:intent destinationRoutable:routable params:params result:result];
+    if ([self.delegate respondsToSelector:@selector(router:didStartRoutable:forIntent:params:result:)]) {
+        [self.delegate router:self didStartRoutable:routable forIntent:intent params:params result:result];
     }
     
     return result;
